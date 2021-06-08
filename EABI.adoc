@@ -138,24 +138,41 @@ to be switched to a different thread-local storage region.
 
 == Floating-Point Registers and Argument Passing
 
+There are two options for implementing hardware floating-point
+instructions. One is Zfinx, since it don't use `f` registers,
+it does not increase the interrupt latency, which is very
+suitable for embedded field. The other one is F extension we
+are familiar with, the hard-fp ABI which pass arguments in `f`
+registers can provide higher performance, the soft-fp ABI which
+pass arguments in integer registers can be compatible with code
+without F extension.
+
+=== Zfinx
+
+Systems implementing Zfinx have no additional `f` registers and
+provide hardware floating-point instructions operating directly on the
+`x` registers.
+
+=== Soft-fp
+
 Floating-point arguments are always passed in the integer registers
 `a0`-`a3` or on the stack.
 
-Where the separate `f` floating-point registers are present, they are
-treated as all callee-save, so there is no increase in interrupt
-latency.  Systems with separate `f` registers will have to move
-floating-point arguments to the floating-point registers to use
-hardware floating-point instructions, after first creating a
-stack frame and storing some callee-saved floating-point registers.
+The floating-point registers `f0`-`f15` are treated as caller-save
+registers, and `f16`-`f31` are treated as callee-save registers.
 
 NOTE: A separate hard-float EABI could add a few caller-saved
 floating-point argument and temporary registers to improve performance
 and code size, but at the expense of supporting another incompatible
 ABI with increased interrupt latency.
 
-Systems implementing Zfinx have no additional `f` registers and
-provide hardware floating-point instructions operating directly on the
-`x` registers.
+=== Hard-fp
+
+The floating-point registers `f0`-`f15` are treated as caller-save
+registers, and `f16`-`f31` are treated as callee-save registers.
+
+Floating-point arguments are passed in `f0`-`f15` or on the stack.
+Floating-point return values are passed in `f0`-`f1`.
 
 == GCC Changes
 
